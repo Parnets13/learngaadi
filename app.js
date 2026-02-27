@@ -16,7 +16,7 @@ app.use(express.static("src/Public"));
 app.use(express.urlencoded({ extended: true }));
 
 // mongodb connection - properly initialize
-DB.connectDB;
+DB.connectDB();
 
 // Importing route files
 const adminRoute = require("./src/Routes/Admin/admin");
@@ -52,6 +52,11 @@ app.use("/api/user", BookingOTPRoute);
 app.use("/api/driver", driverRoute);
 app.use("/api/driver", OtpLoginRoute);
 
+// Health check endpoint for Render
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
 const os = require('os');
 
 // Get network interfaces
@@ -73,10 +78,17 @@ Object.keys(networkInterfaces).forEach(interfaceName => {
 
 app.use(express.static(path.join(__dirname, "build"))); // Change 'build' to your frontend folder if needed
 
-// Redirect all requests to the index.html file
-
+// Redirect all requests to the index.html file (only if build folder exists)
 app.get("*", (req, res) => {
-  return res.sendFile(path.join(__dirname, "build", "index.html"));
+  const indexPath = path.join(__dirname, "build", "index.html");
+  if (require('fs').existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  } else {
+    return res.status(404).json({ 
+      status: false, 
+      message: "API is running. Frontend build not found." 
+    });
+  }
 });
 
 // app.all("*", (req, res) => {
