@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 // firebase connection
 const admin = require("firebase-admin");
-const serviceAccount = require("../../../serivceAccountkey.json");
+const serviceAccount = require("../../../serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
