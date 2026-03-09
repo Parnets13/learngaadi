@@ -9,7 +9,17 @@ const moment = require("moment");
 const path = require("path");
 
 app.use(express.json());
-app.use(cors());
+
+// Enhanced CORS configuration for development
+const corsOptions = {
+  origin: '*', // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.static("src/Public"));
@@ -57,6 +67,16 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
+// API test endpoint
+app.get("/api/test", (req, res) => {
+  res.status(200).json({ 
+    status: "success", 
+    message: "LearnGaadi API is working!",
+    timestamp: new Date().toISOString(),
+    port: process.env.PORT || 8781
+  });
+});
+
 const os = require('os');
 
 // Get network interfaces
@@ -101,6 +121,9 @@ app.get("*", (req, res) => {
 //   }
 // });
 
-app.listen(process.env.PORT || 8781, () => {
+app.listen(process.env.PORT || 8781, '0.0.0.0', () => {
   console.log(`server is running on PORT ${process.env.PORT || 8781}`);
+  console.log(`Local: http://localhost:${process.env.PORT || 8781}`);
+  console.log(`Network: http://0.0.0.0:${process.env.PORT || 8781}`);
+  console.log(`For Android Emulator: http://10.0.2.2:${process.env.PORT || 8781}`);
 });

@@ -5,13 +5,13 @@ const userModel = require("../../Models/User/user");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 // firebase connection
-const admin = require("firebase-admin");
-const serviceAccount = require("../../../serviceAccountKey.json");
+// const admin = require("firebase-admin");
+// const serviceAccount = require("../../../serviceAccountKey.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  projectId: "learngadi-64516",
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   projectId: "learngadi-64516",
+// });
 
 // const FCM = require("fcm-node");
 // const fcmDriver = new FCM(
@@ -37,21 +37,22 @@ admin.initializeApp({
 
 async function sendMessage(DriversdeviceToken, userDeviceID) {
   try {
-    const message = {
-      // token: userDeviceID,
-      token: DriversdeviceToken,
-      notification: {
-        title: "New Notification from Learn Gaadi",
-        body: "New booking request from Learn Gaadi",
-      },
-      data: {
-        title: "New Notification from Learn Gaadi",
-        body: "New booking request from Learn Gaadi",
-      },
-    };
+    console.log("Firebase notifications disabled - serviceAccountKey.json not configured");
+    // const message = {
+    //   // token: userDeviceID,
+    //   token: DriversdeviceToken,
+    //   notification: {
+    //     title: "New Notification from Learn Gaadi",
+    //     body: "New booking request from Learn Gaadi",
+    //   },
+    //   data: {
+    //     title: "New Notification from Learn Gaadi",
+    //     body: "New booking request from Learn Gaadi",
+    //   },
+    // };
 
-    const response = await admin.messaging().send(message);
-    console.log("Notification sent successfully:", response);
+    // const response = await admin.messaging().send(message);
+    // console.log("Notification sent successfully:", response);
   } catch (error) {
     console.error("Error sending notification:", error);
     throw error; // Ensure error is propagated up for better error handling

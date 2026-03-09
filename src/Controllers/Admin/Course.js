@@ -57,12 +57,10 @@ class Course {
   async getCourse(req, res) {
     try {
       const CourseList = await CourseModel.find({}).sort({ _id: -1 });
-      if (CourseList?.length > 0) {
-        return res.status(200).json({ CourseList: CourseList });
-      }
-      return res.status(400).json({ CourseList: CourseList });
+      return res.status(200).json({ CourseList: CourseList });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ error: "Failed to fetch courses" });
     }
   }
 

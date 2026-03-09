@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: learngaadi-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8781
+      - key: DB_STR
+        sync: false
+      - key: admin_secret_key
+        sync: false
+      - key: vendor_secret_key
+        sync: false
+      - key: customer_secret_key
+        sync: false

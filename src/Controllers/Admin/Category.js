@@ -30,12 +30,10 @@ class Category {
   async getCategory(req, res) {
     try {
       const CategoryList = await CategoryModel.find({});
-      if (CategoryList?.length > 0) {
-        return res.status(200).json({ CategoryList: CategoryList });
-      }
-      return res.status(400).json({ CategoryList: CategoryList });
+      return res.status(200).json({ CategoryList: CategoryList });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ error: "Failed to fetch categories" });
     }
   }
 

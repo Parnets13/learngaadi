@@ -10,12 +10,7 @@ class Otp {
       return res.json({ error: "No Number" });
     } else {
       try {
-        let user = await userModel.findOne({ mobile: mobile });
-        if (!user) {
-          return res
-            .status(500)
-            .json({ error: "Please enter registred Mobile number" });
-        }
+        // Allow OTP for both registered and new users
         let newnumber = await otpModel.findOne({ mobile: mobile });
         if (newnumber) {
           const key = "535008a0e9ef96ce5c84c6619382ecba11da09d4078b869b";

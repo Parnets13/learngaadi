@@ -1,5 +1,9 @@
 node_modules
 .env
-serivceAccountkey.json
-serviceAccountkey.json
+serviceAccountKey.json
 *ServiceAccountKey.json
+*.log
+.DS_Store
+build/
+dist/
+coverage/

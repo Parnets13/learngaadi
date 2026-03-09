@@ -30,12 +30,10 @@ class Banner {
   async getBanner(req, res) {
     try {
       const BannerList = await BannerModel.find({});
-      if (BannerList?.length > 0) {
-        return res.status(200).json({ BannerList: BannerList });
-      }
-      return res.status(400).json({ BannerList: BannerList });
+      return res.status(200).json({ BannerList: BannerList });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ error: "Failed to fetch banners" });
     }
   }
 
