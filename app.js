@@ -67,6 +67,55 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
+// Create test driver endpoint (for testing only)
+app.get("/api/create-test-driver", async (req, res) => {
+  try {
+    const driverModel = require("./src/Models/Driver/driver");
+    
+    // Check if driver already exists
+    const existingDriver = await driverModel.findOne({ mobile: "9999999999" });
+    
+    if (existingDriver) {
+      return res.status(200).json({ 
+        message: "Test driver already exists!",
+        mobile: "9999999999",
+        name: existingDriver.name
+      });
+    }
+
+    // Create new test driver
+    const testDriver = new driverModel({
+      name: "Test Driver",
+      mobile: "9999999999",
+      DrivingSchoolName: "Test School",
+      Area: "Test Area",
+      City: "Test City",
+      State: "Test State",
+      Country: "India",
+      Pincode: "123456",
+      VehicalType: "Car",
+      VehicalModel: "Test Model",
+      Experience: "2 years",
+      status: "Online",
+      blockstatus: false,
+      DriverDuty: false,
+    });
+
+    await testDriver.save();
+    res.status(200).json({ 
+      message: "Test driver created successfully!",
+      mobile: "9999999999",
+      note: "Use this number to login and get OTP: 123456"
+    });
+  } catch (error) {
+    console.error("Error creating test driver:", error);
+    res.status(500).json({ 
+      error: "Failed to create test driver",
+      message: error.message 
+    });
+  }
+});
+
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error occurred:', err);
