@@ -7,31 +7,21 @@ class OtpLogin {
     let { mobile } = req.body;
     if (!mobile) {
       return res.status(400).json({ error: "Mobile number is required" });
-    } else {
-      try {
-        let driver = await driverModel.findOne({ mobile: mobile });
-        
-        // For testing: If driver not found, create a temporary test driver
-        if (!driver) {
-          console.log("Driver not found, creating test driver for:", mobile);
-          driver = new driverModel({
-            name: "Test Driver",
-            mobile: mobile,
-            DrivingSchoolName: "Test School",
-            Area: "Test Area",
-            City: "Test City",
-            State: "Test State",
-            Country: "India",
-            Pincode: 123456,
-            VehicalType: "Car",
-            VehicalModel: "Test Model",
-            Experience: "1 year",
-            status: "Online",
-            blockstatus: false,
-          });
-          await driver.save();
-          console.log("Test driver created successfully");
-        }
+    }
+    
+    try {
+      let driver = await driverModel.findOne({ mobile: mobile });
+      
+      // Check if driver exists
+      if (!driver) {
+        console.log("Driver not found for mobile:", mobile);
+        return res.status(404).json({ 
+          error: "Driver not registered. Please complete registration first.",
+          needsRegistration: true 
+        });
+      }
+      
+      console.log("Driver found:", driver.name, driver.mobile);
         
         let newnumber = await OtpLoginModel.findOne({ mobile: mobile });
         if (newnumber) {
@@ -91,13 +81,12 @@ class OtpLogin {
         //   var otp = (Math.floor(Math.random() * 1000000) + 1000000)
         //     .toString()
         //     .substring(1);
-        var otp = "123456"; 
-          console.log(otp);
+        var otp = "123456"; // Fixed OTP for testing
+          console.log("Generated OTP:", otp);
           let newotp = new OtpLoginModel({
             mobile,
             otp,
           });
-          console.log("otp", otp);
           let save;
           const key = "535008a0e9ef96ce5c84c6619382ecba11da09d4078b869b";
           const sid = "azeurraggregateacessserrvices1";
@@ -151,63 +140,84 @@ class OtpLogin {
             .catch(async (error) => {
               console.error("SMS Error:", error.message);
               // Even if SMS fails, save OTP and return success for testing
-              save = await newotp.save();
-              if (save) {
-                console.log("OTP saved despite SMS failure:", otp);
-                return res.status(200).json({
-                  success: "otp sent successfully",
-                  otp: otp,
-                  mobile: mobile,
-                });
-              } else {
+              try {
+                save = await newotp.save();
+                if (save) {
+                  console.log("OTP saved despite SMS failure:", otp);
+                  return res.status(200).json({
+                    success: "otp sent successfully",
+                    otp: otp,
+                    mobile: mobile,
+                  });
+                } else {
+                  return res.status(500).json({ error: "Failed to save OTP" });
+                }
+              } catch (saveError) {
+                console.error("Error saving OTP:", saveError);
                 return res.status(500).json({ error: "Failed to generate OTP" });
               }
             });
         }
-      } catch (err) {
-        console.log("Error in sendotp:", err);
-        return res.status(500).json({ error: "Internal server error" });
-      }
+    } catch (err) {
+      console.error("Error in sendotp:", err);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: err.message 
+      });
     }
   }
 
   async verifyotp(req, res) {
     const { otp, mobile, token } = req.body;
-    console.log("token", token);
+    console.log("Verifying OTP - Mobile:", mobile, "OTP:", otp, "Token:", token);
+    
     if (!otp) {
-      return res.json({ error: "enter otp" });
-    } else {
-      try {
-        let verify = await OtpLoginModel.findOne({
-          otp: otp,
-          mobile: mobile,
-        });
-        if (verify) {
-          let driver = await driverModel.findOneAndUpdate(
-            {
-              mobile: mobile,
-            },
-            { status: "online", token: token }
-          );
-          console.log("driver", driver);
-          if (driver) {
-            return res
-              .status(200)
-              .json({ success: "otp verified", driver: driver });
-          } else {
-            return res
-              .status(200)
-              .json({ success: "otp verified", mobile: mobile });
-          }
+      return res.status(400).json({ error: "Please enter OTP" });
+    }
+    
+    if (!mobile) {
+      return res.status(400).json({ error: "Mobile number is required" });
+    }
+    
+    try {
+      let verify = await OtpLoginModel.findOne({
+        otp: otp,
+        mobile: mobile,
+      });
+      
+      console.log("OTP verification result:", verify ? "Found" : "Not found");
+      
+      if (verify) {
+        let driver = await driverModel.findOneAndUpdate(
+          { mobile: mobile },
+          { status: "online", token: token },
+          { new: true } // Return updated document
+        );
+        
+        console.log("Driver update result:", driver ? driver.name : "Not found");
+        
+        if (driver) {
+          return res.status(200).json({ 
+            success: "OTP verified successfully", 
+            driver: driver 
+          });
         } else {
-          return res.status(500).json({
-            error:
-              "Please enter vaild OTP sent to your Registered Mobile Number",
+          return res.status(404).json({ 
+            error: "Driver not found. Please register first.",
+            needsRegistration: true
           });
         }
-      } catch (err) {
-        console.log(err);
+      } else {
+        return res.status(400).json({
+          error: "Invalid OTP. Please enter the correct OTP sent to your mobile number",
+        });
       }
+    } catch (err) {
+      console.error("Error in verifyotp:", err);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: err.message 
+      });
     }
   }
 

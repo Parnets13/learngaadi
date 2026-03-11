@@ -186,9 +186,13 @@ class DailyBooking {
       if (BookingList?.length > 0) {
         return res.status(200).json({ BookingList: BookingList });
       }
-      return res.status(400).json({ BookingList: BookingList });
+      return res.status(200).json({ BookingList: [] });
     } catch (error) {
-      console.log(error);
+      console.log('getDailyBooking error:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch bookings',
+        message: error.message 
+      });
     }
   }
 

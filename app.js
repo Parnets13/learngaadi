@@ -67,6 +67,24 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error occurred:', err);
+  
+  // Log detailed error information
+  console.error('Error stack:', err.stack);
+  console.error('Request URL:', req.url);
+  console.error('Request method:', req.method);
+  console.error('Request body:', req.body);
+  
+  // Send error response
+  res.status(err.status || 500).json({
+    status: false,
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 // API test endpoint
 app.get("/api/test", (req, res) => {
   res.status(200).json({ 

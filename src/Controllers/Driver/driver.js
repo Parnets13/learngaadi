@@ -7,17 +7,20 @@ class driver {
       let Aadharcard;
       let DrivingLicence;
 
-      req.files.map((item) => {
-        if (item.fieldname === "profilepic") {
-          profilepic = item.filename;
-        }
-        if (item.fieldname === "Aadharcard") {
-          Aadharcard = item.filename;
-        }
-        if (item.fieldname === "DrivingLicence") {
-          DrivingLicence = item.filename;
-        }
-      });
+      if (req.files && req.files.length > 0) {
+        req.files.map((item) => {
+          if (item.fieldname === "profilepic") {
+            profilepic = item.filename;
+          }
+          if (item.fieldname === "Aadharcard") {
+            Aadharcard = item.filename;
+          }
+          if (item.fieldname === "DrivingLicence") {
+            DrivingLicence = item.filename;
+          }
+        });
+      }
+      
       const {
         name,
         mobile,
@@ -30,155 +33,181 @@ class driver {
         VehicalModel,
         Experience,
       } = req.body;
+      
+      console.log("Driver signup request:", { name, mobile, City });
+      
+      if (!mobile) {
+        return res.status(400).json({ error: "Mobile number is required" });
+      }
+      
       const data = await driverModel.findOne({ mobile: mobile });
       if (data) {
-        return res.status(300).json({
-          error:
-            "Entered Mobile No. is already registered. Please try with another Mobile No.",
+        return res.status(400).json({
+          error: "Entered Mobile No. is already registered. Please try with another Mobile No.",
         });
       }
+      
       if (!profilepic) {
-        return res.status(400).json({ error: "please provide profile image" });
-      } else {
-        const newdriver = await driverModel.create({
-          profilepic: profilepic,
-          Aadharcard: Aadharcard,
-          DrivingLicence: DrivingLicence,
-          name: name,
-          mobile: mobile,
-          Area: Area,
-          City: City,
-          State: State,
-          Country: Country,
-          Pincode: Pincode,
-          VehicalType: VehicalType,
-          VehicalModel: VehicalModel,
-          Experience: Experience,
-        });
-        if (newdriver) {
-          return res.status(200).json({ success: "success", data: newdriver });
-        }
-        return res
-          .status(400)
-          .json({ error: "Something went wrong!!! please try again" });
+        return res.status(400).json({ error: "Please provide profile image" });
       }
+      
+      const newdriver = await driverModel.create({
+        profilepic: profilepic,
+        Aadharcard: Aadharcard,
+        DrivingLicence: DrivingLicence,
+        name: name,
+        mobile: mobile,
+        Area: Area,
+        City: City,
+        State: State,
+        Country: Country,
+        Pincode: Pincode,
+        VehicalType: VehicalType,
+        VehicalModel: VehicalModel,
+        Experience: Experience,
+      });
+      
+      if (newdriver) {
+        console.log("Driver created successfully:", newdriver._id);
+        return res.status(200).json({ success: "Driver registered successfully", data: newdriver });
+      }
+      
+      return res.status(400).json({ error: "Something went wrong! Please try again" });
     } catch (error) {
-      console.log(error);
+      console.error("Error in driverSignup:", error);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: error.message 
+      });
     }
   }
 
   async driverUpdate1(req, res) {
     const { driverId, VehicalType, VehicalModel, Experience } = req.body;
+    
+    console.log("Driver update 1 request:", { driverId, VehicalType });
+    
     try {
+      if (!driverId) {
+        return res.status(400).json({ error: "Driver ID is required" });
+      }
+      
       const data = await driverModel.findOneAndUpdate(
         { _id: driverId },
         {
           VehicalType: VehicalType,
           VehicalModel: VehicalModel,
           Experience: Experience,
-        }
+        },
+        { new: true }
       );
+      
       if (!data) {
-        return res.status(403).json({
-          error: "Cannot able to find the driver",
+        return res.status(404).json({
+          error: "Cannot find the driver",
         });
-      } else {
-        return res
-          .status(200)
-          .json({ success: "Successfully registered", data: data });
       }
+      
+      console.log("Driver updated successfully:", data._id);
+      return res.status(200).json({ 
+        success: "Successfully updated", 
+        data: data 
+      });
     } catch (err) {
-      console.log(err);
+      console.error("Error in driverUpdate1:", err);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: err.message 
+      });
     }
   }
 
   async driverUpdate2(req, res) {
-    let Aadharcard;
-    let DrivingLicence;
-    req.files.map((item) => {
-      if (item.fieldname === "Aadharcard") {
-        Aadharcard = item.filename;
-      }
-      if (item.fieldname === "DrivingLicence") {
-        DrivingLicence = item.filename;
-      }
-    });
-    const { driverId } = req.body;
     try {
+      let Aadharcard;
+      let DrivingLicence;
+      
+      if (req.files && req.files.length > 0) {
+        req.files.map((item) => {
+          if (item.fieldname === "Aadharcard") {
+            Aadharcard = item.filename;
+          }
+          if (item.fieldname === "DrivingLicence") {
+            DrivingLicence = item.filename;
+          }
+        });
+      }
+      
+      const { driverId } = req.body;
+      
+      console.log("Driver update 2 request:", { driverId, Aadharcard, DrivingLicence });
+      
+      if (!driverId) {
+        return res.status(400).json({ error: "Driver ID is required" });
+      }
+      
       const data = await driverModel.findOneAndUpdate(
         { _id: driverId },
-        { Aadharcard: Aadharcard, DrivingLicence: DrivingLicence }
+        { Aadharcard: Aadharcard, DrivingLicence: DrivingLicence },
+        { new: true }
       );
+      
       if (!data) {
-        return res.status(403).json({
-          error: "Cannot able to find the driver",
+        return res.status(404).json({
+          error: "Cannot find the driver",
         });
-      } else {
-        return res.status(200).json({ success: "Successfully registered" });
       }
+      
+      console.log("Driver documents updated successfully:", data._id);
+      return res.status(200).json({ 
+        success: "Documents uploaded successfully",
+        data: data
+      });
     } catch (err) {
-      console.log(err);
+      console.error("Error in driverUpdate2:", err);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: err.message 
+      });
     }
   }
 
   async driverUpdate3(req, res) {
-    const {
-      driverId,
-      // MtoF,
-      // StoS,
-      // sixam_sevenam,
-      // sevenam_eightam,
-      // eightam_nineam,
-      // nineam_tenam,
-      // tenam_elevenam,
-      // elevenam_twelvepm,
-      // twelvepm_onepm,
-      // onepm_twopm,
-      // twopm_threepm,
-      // threepm_fourpm,
-      // fourpm_fivepm,
-      // fivepm_sixpm,
-      // sixpm_sevenpm,
-      // sevenpm_eightpm,
-      availableSlots,
-    } = req.body;
+    const { driverId, availableSlots } = req.body;
 
-    console.log("availableSlots", driverId, availableSlots);
+    console.log("Driver update 3 request:", { driverId, availableSlots });
+    
     try {
+      if (!driverId) {
+        return res.status(400).json({ error: "Driver ID is required" });
+      }
+      
       const data = await driverModel.findOneAndUpdate(
         { _id: driverId },
         {
           updateTime: true,
-          // MtoF: MtoF,
-          // StoS: StoS,
-          // sixam_sevenam: sixam_sevenam,
-          // sevenam_eightam: sevenam_eightam,
-          // eightam_nineam: eightam_nineam,
-          // nineam_tenam: nineam_tenam,
-          // tenam_elevenam: tenam_elevenam,
-          // elevenam_twelvepm: elevenam_twelvepm,
-          // twelvepm_onepm: twelvepm_onepm,
-          // onepm_twopm: onepm_twopm,
-          // twopm_threepm: twopm_threepm,
-          // threepm_fourpm: threepm_fourpm,
-          // fourpm_fivepm: fourpm_fivepm,
-          // fivepm_sixpm: fivepm_sixpm,
-          // sixpm_sevenpm: sixpm_sevenpm,
-          // sevenpm_eightpm: sevenpm_eightpm,
           availableSlots: availableSlots,
-        }
+        },
+        { new: true }
       );
+      
       if (!data) {
-        return res.status(403).json({
-          error: "Cannot able to find the driver",
+        return res.status(404).json({
+          error: "Cannot find the driver",
         });
-      } else {
-        return res
-          .status(200)
-          .json({ success: "Successfully updated", driver: data });
       }
+      
+      console.log("Driver slots updated successfully:", data._id);
+      return res.status(200).json({ 
+        success: "Successfully updated", 
+        driver: data 
+      });
     } catch (err) {
-      console.log(err);
+      console.error("Error in driverUpdate3:", err);
+      return res.status(500).json({ 
+        error: "Internal server error", 
+        details: err.message 
+      });
     }
   }
 
@@ -199,11 +228,19 @@ class driver {
   }
 
   async getalldriver(req, res) {
-    let driver = await driverModel.find({}).sort({ _id: -1 });
-    if (driver) {
-      return res.json({ driver: driver });
-    } else {
-      return res.status(403).json({ error: "No driver exist" });
+    try {
+      let driver = await driverModel.find({}).sort({ _id: -1 });
+      if (driver) {
+        return res.json({ driver: driver });
+      } else {
+        return res.status(200).json({ driver: [] });
+      }
+    } catch (error) {
+      console.log('getalldriver error:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch drivers',
+        message: error.message 
+      });
     }
   }
 
