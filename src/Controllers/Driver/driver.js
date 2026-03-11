@@ -24,6 +24,7 @@ class driver {
       const {
         name,
         mobile,
+        DrivingSchoolName,
         Area,
         City,
         State,
@@ -34,10 +35,14 @@ class driver {
         Experience,
       } = req.body;
       
-      console.log("Driver signup request:", { name, mobile, City });
+      console.log("Driver signup request:", { name, mobile, DrivingSchoolName, City });
       
       if (!mobile) {
         return res.status(400).json({ error: "Mobile number is required" });
+      }
+      
+      if (!name) {
+        return res.status(400).json({ error: "Name is required" });
       }
       
       const data = await driverModel.findOne({ mobile: mobile });
@@ -57,6 +62,7 @@ class driver {
         DrivingLicence: DrivingLicence,
         name: name,
         mobile: mobile,
+        DrivingSchoolName: DrivingSchoolName,
         Area: Area,
         City: City,
         State: State,
