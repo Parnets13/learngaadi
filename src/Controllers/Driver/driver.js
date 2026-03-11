@@ -72,9 +72,10 @@ class driver {
         });
       }
       
+      // Use default profile pic if not provided
       if (!profilepic) {
-        console.log("Validation failed: Profile pic missing");
-        return res.status(400).json({ error: "Please provide profile image" });
+        console.log("No profile pic provided, using default");
+        profilepic = "default-driver.png";
       }
       
       // Create driver
