@@ -3,12 +3,17 @@ const driverModel = require("../../Models/Driver/driver");
 class driver {
   async driverSignup(req, res) {
     try {
+      console.log("=== Driver Signup Request ===");
+      console.log("Body:", req.body);
+      console.log("Files:", req.files?.length || 0);
+      
       let profilepic;
       let Aadharcard;
       let DrivingLicence;
 
       if (req.files && req.files.length > 0) {
         req.files.map((item) => {
+          console.log("File received:", item.fieldname, item.filename);
           if (item.fieldname === "profilepic") {
             profilepic = item.filename;
           }
@@ -35,27 +40,44 @@ class driver {
         Experience,
       } = req.body;
       
-      console.log("Driver signup request:", { name, mobile, DrivingSchoolName, City });
+      console.log("Parsed data:", { name, mobile, DrivingSchoolName, City, profilepic });
       
-      if (!mobile) {
-        return res.status(400).json({ error: "Mobile number is required" });
-      }
-      
+      // Validation
       if (!name) {
+        console.log("Validation failed: Name missing");
         return res.status(400).json({ error: "Name is required" });
       }
       
+      if (!mobile) {
+        console.log("Validation failed: Mobile missing");
+        return res.status(400).json({ error: "Mobile number is required" });
+      }
+      
+      if (!DrivingSchoolName) {
+        console.log("Validation failed: DrivingSchoolName missing");
+        return res.status(400).json({ error: "Driving School Name is required" });
+      }
+      
+      if (!Area || !City || !State || !Country || !Pincode) {
+        console.log("Validation failed: Address fields missing");
+        return res.status(400).json({ error: "Please fill all address fields" });
+      }
+      
+      // Check if mobile already exists
       const data = await driverModel.findOne({ mobile: mobile });
       if (data) {
+        console.log("Mobile already registered:", mobile);
         return res.status(400).json({
           error: "Entered Mobile No. is already registered. Please try with another Mobile No.",
         });
       }
       
       if (!profilepic) {
+        console.log("Validation failed: Profile pic missing");
         return res.status(400).json({ error: "Please provide profile image" });
       }
       
+      // Create driver
       const newdriver = await driverModel.create({
         profilepic: profilepic,
         Aadharcard: Aadharcard,
@@ -71,16 +93,24 @@ class driver {
         VehicalType: VehicalType,
         VehicalModel: VehicalModel,
         Experience: Experience,
+        status: "Online",
+        blockstatus: false,
+        DriverDuty: false,
       });
       
       if (newdriver) {
-        console.log("Driver created successfully:", newdriver._id);
-        return res.status(200).json({ success: "Driver registered successfully", data: newdriver });
+        console.log("✅ Driver created successfully:", newdriver._id);
+        return res.status(200).json({ 
+          success: "Driver registered successfully", 
+          data: newdriver 
+        });
       }
       
+      console.log("Failed to create driver");
       return res.status(400).json({ error: "Something went wrong! Please try again" });
     } catch (error) {
-      console.error("Error in driverSignup:", error);
+      console.error("❌ Error in driverSignup:", error);
+      console.error("Error stack:", error.stack);
       return res.status(500).json({ 
         error: "Internal server error", 
         details: error.message 
