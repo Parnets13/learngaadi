@@ -116,6 +116,45 @@ app.get("/api/create-test-driver", async (req, res) => {
   }
 });
 
+// Create default categories endpoint (for testing only)
+app.get("/api/create-categories", async (req, res) => {
+  try {
+    const CategoryModel = require("./src/Models/Admin/Category");
+    
+    // Check if categories already exist
+    const existingCategories = await CategoryModel.find({});
+    
+    if (existingCategories.length > 0) {
+      return res.status(200).json({ 
+        message: "Categories already exist!",
+        categories: existingCategories.map(c => c.catName)
+      });
+    }
+
+    // Create default categories
+    const categories = [
+      { catName: "Car", catImage: "car.png" },
+      { catName: "Bike", catImage: "bike.png" },
+      { catName: "Scooter", catImage: "scooter.png" },
+      { catName: "Auto", catImage: "auto.png" },
+      { catName: "Truck", catImage: "truck.png" },
+    ];
+
+    await CategoryModel.insertMany(categories);
+    
+    res.status(200).json({ 
+      message: "Categories created successfully!",
+      categories: categories.map(c => c.catName)
+    });
+  } catch (error) {
+    console.error("Error creating categories:", error);
+    res.status(500).json({ 
+      error: "Failed to create categories",
+      message: error.message 
+    });
+  }
+});
+
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error occurred:', err);
